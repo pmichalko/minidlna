@@ -88,3 +88,5 @@ struct album_art_name_s * album_art_names = NULL;
 volatile short int quitting = 0;
 volatile uint32_t updateID = 0;
 const char *force_sort_criteria = NULL;
+
+char *subtitles_lang_suffixes[MAX_SUBT_LANG_SUFF] = {NULL};

@@ -67,6 +67,7 @@ static const struct {
 	{ MERGE_MEDIA_DIRS, "merge_media_dirs" },
 	{ WIDE_LINKS, "wide_links" },
 	{ TIVO_DISCOVERY, "tivo_discovery" },
+    { SUBTITLES_LANG_SUFFIXES, "subtitles_lang_suffixes" },
 };
 
 int

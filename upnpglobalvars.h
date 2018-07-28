@@ -235,4 +235,7 @@ extern volatile short int quitting;
 extern volatile uint32_t updateID;
 extern const char *force_sort_criteria;
 
+#define MAX_SUBT_LANG_SUFF 10
+extern char *subtitles_lang_suffixes[MAX_SUBT_LANG_SUFF];
+
 #endif
