@@ -510,6 +510,7 @@ init(int argc, char **argv)
 	int ifaces = 0;
 	media_types types;
 	uid_t uid = 0;
+    int sub_i = 0;
 
 	/* first check if "-f" option is used */
 	for (i=2; i<argc; i++)
@@ -752,6 +753,21 @@ init(int argc, char **argv)
 			if (strcasecmp(ary_options[i].value, "beacon") == 0)
 				CLEARFLAG(TIVO_BONJOUR_MASK);
 			break;
+        case SUBTITLES_LANG_SUFFIXES:
+            for (string = ary_options[i].value; (word = strtok(string, ",")); string = NULL)
+			{
+				if (sub_i >= MAX_SUBT_LANG_SUFF)
+				{
+					DPRINTF(E_ERROR, L_GENERAL, "Too many subtitles suffixes (max: %d), ignoring %s\n",
+						MAX_SUBT_LANG_SUFF, word);
+					break;
+				}
+				while (isspace(*word)) {
+					word++;
+                }
+                subtitles_lang_suffixes[sub_i++] = word;
+            }
+            break;
 		default:
 			DPRINTF(E_ERROR, L_GENERAL, "Unknown option in file %s\n",
 				optionsfile);
