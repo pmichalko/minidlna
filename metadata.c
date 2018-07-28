@@ -121,24 +121,27 @@ check_for_captions(const char *path, int64_t detailID)
 	char file[MAXPATHLEN];
 	char *p;
 	int ret;
+	int sub_i;
+	const char SRT_SUFFIX[5] = ".srt";
 
 	strncpyt(file, path, sizeof(file));
 	p = strip_ext(file);
 	if (!p)
 		return;
 
-	/* [BEGIN] CUSTOMIZATION FOR SUBTITLES WITH LANG SUFFIX (e.g.: ".en.srt") */
-	if (ends_with(path, ".srt") &&
-	   (ends_with(file, ".en") ||
-	    ends_with(file, ".pl") ||
-	    ends_with(file, ".cs") ||
-	    ends_with(file, ".sk"))) {
-		p = strip_ext(file);
-		if (!p) {
-			return;
-		}
-	}
-	/* [END] CUSTOMIZATION */
+    /* If there is some language code suffix in subtitles, we need to remove it to match detail ID (raw media file name) */
+	if (ends_with(path, SRT_SUFFIX)) {
+        for (sub_i=0; subtitles_lang_suffixes[sub_i]!=NULL; sub_i++)
+        {
+            if (ends_with(file, subtitles_lang_suffixes[sub_i])) {
+                p = strip_ext(file);
+                if (!p) {
+                    return;
+                }
+                break;
+            }
+        }
+    }
 
 	/* If we weren't given a detail ID, look for one. */
 	if (!detailID)
@@ -152,30 +155,21 @@ check_for_captions(const char *path, int64_t detailID)
 		}
 	}
 
-	strcpy(p, ".srt");
+	strcpy(p, SRT_SUFFIX);
 	ret = access(file, R_OK);
 
-	/* [BEGIN] CUSTOMIZATION FOR SUBTITLES WITH LANG SUFFIX (e.g.: ".en.srt") */
-	if (ret != 0) {
-		strcpy(p, ".en.srt");
-		ret = access(file, R_OK);
-	}
-
-	if (ret != 0) {
-		strcpy(p, ".pl.srt");
-		ret = access(file, R_OK);
-	}
-
-	if (ret != 0) {
-		strcpy(p, ".cs.srt");
-		ret = access(file, R_OK);
-	}
-
-	if (ret != 0) {
-		strcpy(p, ".sk.srt");
-		ret = access(file, R_OK);
-	}
-	/* [END] CUSTOMIZATION */
+	/* If no .srt file was found, try to lookup for subtitles containing language codes (specified in configuration) */
+    char *full_suffix = NULL;
+    for (sub_i=0; subtitles_lang_suffixes[sub_i]!=NULL && ret!=0; sub_i++)
+    {
+        full_suffix = malloc(strlen(subtitles_lang_suffixes[sub_i]) + strlen(SRT_SUFFIX) + 1);
+        strcpy(full_suffix, subtitles_lang_suffixes[sub_i]);
+        strcat(full_suffix, SRT_SUFFIX);
+        strcpy(p, full_suffix);
+        ret = access(file, R_OK);
+    }
+    free(full_suffix);
+    full_suffix = NULL;
 
 	if (ret != 0)
 	{
@@ -220,7 +214,7 @@ parse_nfo(const char *path, metadata_t *m)
 	}
 	nread = fread(buf, 1, file.st_size, nfo);
 	fclose(nfo);
-	
+
 	ParseNameValue(buf, nread, &xml, 0);
 
 	//printf("\ttype: %s\n", GetValueFromNameValueList(&xml, "rootElement"));
