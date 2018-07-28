@@ -127,6 +127,19 @@ check_for_captions(const char *path, int64_t detailID)
 	if (!p)
 		return;
 
+	/* [BEGIN] CUSTOMIZATION FOR SUBTITLES WITH LANG SUFFIX (e.g.: ".en.srt") */
+	if (ends_with(path, ".srt") &&
+	   (ends_with(file, ".en") ||
+	    ends_with(file, ".pl") ||
+	    ends_with(file, ".cs") ||
+	    ends_with(file, ".sk"))) {
+		p = strip_ext(file);
+		if (!p) {
+			return;
+		}
+	}
+	/* [END] CUSTOMIZATION */
+
 	/* If we weren't given a detail ID, look for one. */
 	if (!detailID)
 	{
@@ -141,6 +154,29 @@ check_for_captions(const char *path, int64_t detailID)
 
 	strcpy(p, ".srt");
 	ret = access(file, R_OK);
+
+	/* [BEGIN] CUSTOMIZATION FOR SUBTITLES WITH LANG SUFFIX (e.g.: ".en.srt") */
+	if (ret != 0) {
+		strcpy(p, ".en.srt");
+		ret = access(file, R_OK);
+	}
+
+	if (ret != 0) {
+		strcpy(p, ".pl.srt");
+		ret = access(file, R_OK);
+	}
+
+	if (ret != 0) {
+		strcpy(p, ".cs.srt");
+		ret = access(file, R_OK);
+	}
+
+	if (ret != 0) {
+		strcpy(p, ".sk.srt");
+		ret = access(file, R_OK);
+	}
+	/* [END] CUSTOMIZATION */
+
 	if (ret != 0)
 	{
 		strcpy(p, ".smi");
